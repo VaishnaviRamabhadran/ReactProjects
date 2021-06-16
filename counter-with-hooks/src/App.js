@@ -1,5 +1,4 @@
 import React from "react";
-import "./App.css";
 
 function Todo({ todo }) {
   return (
@@ -36,6 +35,7 @@ function App() {
     { text: "Meet friend for lunch",isComplete:false },
     { text: "Build really cool todo app",isComplete:false }
   ]);
+  
 const addTodo=text=>{
   const newTodos=[...todos,{text}];
   setTodos(newTodos);
