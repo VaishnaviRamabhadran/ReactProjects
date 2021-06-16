@@ -84,7 +84,6 @@ render(){
         </Provider>
   );
 }
-  // Change code above this line
 };
 
 export default App;
