@@ -1,6 +1,6 @@
-import React,{Component} from 'react';
+import React from 'react';
 import './App.css';
-import { Provider } from 'react-redux'
+import { Provider,connect } from 'react-redux'
 import { createStore } from 'redux';
 
 const ADD = 'ADD';
@@ -8,7 +8,7 @@ const ADD = 'ADD';
 const addMessage = (message) => {
   return {
     type: ADD,
-    message
+    message: message
   }
 };
 
@@ -24,18 +24,20 @@ const messageReducer = (state = [], action) => {
   }
 };
 
-
-
 const store = createStore(messageReducer);
 
 // React:
+//const Provider = ReactRedux.Provider;
+//const connect = ReactRedux.connect;
 
-class DisplayMessages extends React.Component {
+// Change code below this line
+class Presentational extends React.Component {
   constructor(props) {
     super(props);
+    
+    // Remove property 'messages' from Presentational's local state
     this.state = {
-      input: '',
-      messages: []
+      input: ''
     }
     this.handleChange = this.handleChange.bind(this);
     this.submitMessage = this.submitMessage.bind(this);
@@ -45,13 +47,13 @@ class DisplayMessages extends React.Component {
       input: event.target.value
     });
   }
-  submitMessage() {  
-    this.setState((state) => {
-      const currentMessage = state.input;
-      return {
-        input: '',
-        messages: state.messages.concat(currentMessage)
-      };
+  submitMessage() {
+  
+    // Call 'submitNewMessage', which has been mapped to Presentational's props, with a new message;
+    // meanwhile, remove the 'messages' property from the object returned by this.setState().
+    this.props.submitNewMessage(this.state.input);
+    this.setState({
+      input: ''
     });
   }
   render() {
@@ -63,9 +65,12 @@ class DisplayMessages extends React.Component {
           onChange={this.handleChange}/><br/>
         <button onClick={this.submitMessage}>Submit</button>
         <ul>
-          {this.state.messages.map( (message, index) => {
+           {/* The messages state is mapped to Presentational's props; therefore, when rendering,
+               you should access the messages state through props, instead of Presentational's
+               local state. */}
+          {this.props.messages.map( (message, idx) => {
               return (
-                 <li key={index}>{message}</li>
+                 <li key={idx}>{message}</li>
               )
             })
           }
@@ -74,16 +79,31 @@ class DisplayMessages extends React.Component {
     );
   }
 };
+// Change code above this line
 
+const mapStateToProps = (state) => {
+  return {messages: state}
+};
+
+const mapDispatchToProps = (dispatch) => {
+  return {
+    submitNewMessage: (message) => {
+      dispatch(addMessage(message))
+    }
+  }
+};
+
+const Container = connect(mapStateToProps, mapDispatchToProps)(Presentational);
 
 class App extends React.Component {
-render(){
-  return(
-<Provider store={store}>
-          <DisplayMessages />
-        </Provider>
-  );
-}
+  render() {
+    return (
+      <Provider store={store}>
+        <Container/>
+      </Provider>
+    );
+  }
 };
+
 
 export default App;
