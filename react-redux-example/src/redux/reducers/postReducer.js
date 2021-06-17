@@ -18,7 +18,7 @@ export default function(state=initialState,action)
         case NEW_POSTS:
             return{
                 ...state,
-                items:action.payload
+                item:action.payload
             }
         
         default :
