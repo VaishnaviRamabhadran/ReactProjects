@@ -30,12 +30,10 @@ const store = createStore(messageReducer);
 //const Provider = ReactRedux.Provider;
 //const connect = ReactRedux.connect;
 
-// Change code below this line
 class Presentational extends React.Component {
   constructor(props) {
     super(props);
     
-    // Remove property 'messages' from Presentational's local state
     this.state = {
       input: ''
     }
@@ -49,8 +47,6 @@ class Presentational extends React.Component {
   }
   submitMessage() {
   
-    // Call 'submitNewMessage', which has been mapped to Presentational's props, with a new message;
-    // meanwhile, remove the 'messages' property from the object returned by this.setState().
     this.props.submitNewMessage(this.state.input);
     this.setState({
       input: ''
@@ -65,9 +61,6 @@ class Presentational extends React.Component {
           onChange={this.handleChange}/><br/>
         <button onClick={this.submitMessage}>Submit</button>
         <ul>
-           {/* The messages state is mapped to Presentational's props; therefore, when rendering,
-               you should access the messages state through props, instead of Presentational's
-               local state. */}
           {this.props.messages.map( (message, idx) => {
               return (
                  <li key={idx}>{message}</li>
@@ -79,8 +72,6 @@ class Presentational extends React.Component {
     );
   }
 };
-// Change code above this line
-
 const mapStateToProps = (state) => {
   return {messages: state}
 };
