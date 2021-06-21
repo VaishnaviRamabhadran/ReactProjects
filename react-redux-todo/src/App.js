@@ -1,12 +1,10 @@
 import React from 'react';
 import './App.css';
 import { Provider,connect } from 'react-redux'
-import { createStore,combineReducers } from 'redux';
+import { createStore } from 'redux';
 import SaveButton from './SaveButton';
-const ADD = 'ADD';
-const DEL='DEL';
-const UPDATE='UPDATE';
-const SAVE='SAVE';
+import {addItem,delItem,upItem,saveItem} from './redux/actions';
+
 const initialState = {
   todos: [
     { id: 0, text: 'Learn React', showComponent: false },
@@ -21,32 +19,10 @@ function nextTodoId(todos) {
 }
 
 var Container ;
-const addItem = (message) => {
-  return {
-    type: ADD,
-    message: message
-  }
-};
-
-const delItem=(id)=>{
-  return{
-    type: DEL,
-    id:id
-  }
-}
-const upItem=(id)=>{
-  return{
-    type:UPDATE,
-    id:id
-  }
-}
-const saveItem=(id,val)=>{
-  return{
-    type:SAVE,
-    id:id,
-    val:val
-  }
-}
+const ADD = 'ADD';
+const DEL='DEL';
+const UPDATE='UPDATE';
+const SAVE='SAVE';
 const messageReducer = (state = initialState    , action) => {
   switch (action.type) {
     case ADD:
