@@ -1,16 +1,33 @@
 import React from 'react';
 import './App.css';
 import { Provider,connect } from 'react-redux'
-import { createStore } from 'redux';
-
+import { createStore,combineReducers } from 'redux';
+import SaveButton from './SaveButton';
 const ADD = 'ADD';
+const DEL='DEL';
+const UPDATE='UPDATE';
 
-const addMessage = (message) => {
+var Container ;
+const addItem = (message) => {
   return {
     type: ADD,
     message: message
   }
 };
+
+const delItem=(id)=>{
+  return{
+    type: DEL,
+    id:id
+  }
+}
+const upItem=(id,val)=>{
+  return{
+    type:UPDATE,
+    id:id,
+    message:val
+  }
+}
 
 const messageReducer = (state = [], action) => {
   switch (action.type) {
@@ -19,26 +36,51 @@ const messageReducer = (state = [], action) => {
         ...state,
         action.message
       ];
+      
+     /* case UPDATE: console.log(state.id);
+       return state.map((item,index) => {
+          if (index !== action.id) {
+            return item
+          }
+          return {
+           ...state,
+            input: action.message
+          }
+        })*/
+      case DEL:
+        return state.filter((item,index) => index !== action.id);
     default:
       return state;
   }
 };
 
-const store = createStore(messageReducer);
-
-// React:
-//const Provider = ReactRedux.Provider;
-//const connect = ReactRedux.connect;
+// const rootReducer = combineReducers({  
+//   messageReducer : messageReducer
+//  // userDetail : UserReducer  
+//});
+const store = createStore(messageReducer) ;
 
 class Presentational extends React.Component {
   constructor(props) {
     super(props);
     
     this.state = {
-      input: ''
+      input: '',
+      todos: [
+        { id: 0, text: 'Learn React', showComponent:false },
+        { id: 1, text: 'Learn Redux', showComponent:false },
+        { id: 2, text: 'Build something fun!', showComponent:false }
+      ],
+      showComponent: false
     }
+
+
+    
     this.handleChange = this.handleChange.bind(this);
     this.submitMessage = this.submitMessage.bind(this);
+    this.deleteItem=this.deleteItem.bind(this);
+    this.updateItem=this.updateItem.bind(this);
+    this.saveFn=this.saveFn.bind(this);
   }
   handleChange(event) {
     this.setState({
@@ -46,24 +88,77 @@ class Presentational extends React.Component {
     });
   }
   submitMessage() {
-  
-    this.props.submitNewMessage(this.state.input);
+    this.props.addNewItem(this.state.input);
     this.setState({
       input: ''
     });
   }
+  deleteItem(id){
+   this.props.deleteThisItem(id);
+  }
+
+  updateItem(id,val){ 
+  /*  var div=document.createElement("div");
+    var br = document.createElement("br");
+    var textnode = document.createElement("input");
+    textnode.value=val;
+    textnode.setAttribute("id", "updateVal");
+    div.appendChild(br);
+    div.appendChild(textnode);
+
+    var saveButton = document.createElement("BUTTON");
+    var save = document.createTextNode("Save");
+
+    
+    saveButton.appendChild(save);
+
+    div.appendChild(saveButton);
+    var item = document.getElementById(id).parentNode;
+    var spanElement=item.childNodes[0];
+    item.appendChild(div);
+    // item.appendChild(br);
+    // item.appendChild(textnode);
+
+    saveButton.onclick = function(){
+      this.props.updateThisItem(id,document.getElementById("updateVal"));
+    
+    };
+  // this.props.updateThisItem(id,'');
+*/
+this.setState({
+  showComponent: true,
+});
+  }
+saveFn(id){
+  
+  this.props.updateThisItem(id,document.getElementById("updateVal").value);
+  this.setState({
+    showComponent: false,
+  });
+  // item.replaceChild(spanElement,item.childNodes[0]);
+
+
+}
+
   render() {
     return (
       <div>
-        <h2>Type in a new Message:</h2>
+        <h2>To Do List</h2>
         <input
           value={this.state.input}
           onChange={this.handleChange}/><br/>
-        <button onClick={this.submitMessage}>Submit</button>
+        <button onClick={this.submitMessage}>Add new todo item</button>
         <ul>
           {this.props.messages.map( (message, idx) => {
               return (
-                 <li key={idx}>{message}</li>
+                 <li key={idx}><span id={idx}>{message}</span>
+{this.state.showComponent ?
+           <SaveButton id={idx} val={message} onSave={this.saveFn} /> :
+           null
+        }
+                <button className="btn-update" onClick={(e)=>this.updateItem(idx,message)}>Update item</button>
+                <button className="btn-del" onClick={() => this.deleteItem(idx)} >Delete item</button>
+                 </li>
               )
             })
           }
@@ -78,13 +173,22 @@ const mapStateToProps = (state) => {
 
 const mapDispatchToProps = (dispatch) => {
   return {
-    submitNewMessage: (message) => {
-      dispatch(addMessage(message))
-    }
-  }
+    addNewItem: (message) => {
+      dispatch(addItem(message))
+    },
+    deleteThisItem: (id) => {
+      dispatch(delItem(id))
+  },
+  updateThisItem: (id,message) => {
+    dispatch(upItem(id,message))
+}
+}
 };
 
-const Container = connect(mapStateToProps, mapDispatchToProps)(Presentational);
+
+
+Container= connect(mapStateToProps, mapDispatchToProps)(Presentational);
+
 
 class App extends React.Component {
   render() {
@@ -98,3 +202,5 @@ class App extends React.Component {
 
 
 export default App;
+
+
