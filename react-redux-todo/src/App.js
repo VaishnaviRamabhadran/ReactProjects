@@ -6,6 +6,19 @@ import SaveButton from './SaveButton';
 const ADD = 'ADD';
 const DEL='DEL';
 const UPDATE='UPDATE';
+const SAVE='SAVE';
+const initialState = {
+  todos: [
+    { id: 0, text: 'Learn React', showComponent: false },
+    { id: 1, text: 'Learn Redux', showComponent: false },
+    { id: 2, text: 'Build something fun!', showComponent: false }
+  ],
+  
+}
+function nextTodoId(todos) {
+  const maxId = todos.reduce((maxId, todo) => Math.max(todo.id, maxId), -1)
+  return maxId + 1
+}
 
 var Container ;
 const addItem = (message) => {
@@ -21,43 +34,77 @@ const delItem=(id)=>{
     id:id
   }
 }
-const upItem=(id,val)=>{
+const upItem=(id)=>{
   return{
     type:UPDATE,
-    id:id,
-    message:val
+    id:id
   }
 }
-
-const messageReducer = (state = [], action) => {
+const saveItem=(id,val)=>{
+  return{
+    type:SAVE,
+    id:id,
+    val:val
+  }
+}
+const messageReducer = (state = initialState    , action) => {
   switch (action.type) {
     case ADD:
-      return [
-        ...state,
-        action.message
-      ];
+      {
+        return {
+          ...state,
+          todos: [
+            ...state.todos,
+            {
+              id: nextTodoId(state.todos),
+              text: action.message,
+              showComponent: false
+            }
+          ]
+        }
+      }
       
-     /* case UPDATE: console.log(state.id);
-       return state.map((item,index) => {
-          if (index !== action.id) {
-            return item
-          }
+
+      case DEL:    
+      const filterTodo=state.todos.filter(item => item.id !== action.id) ;   
+    return{
+      ...state,
+      todos:filterTodo
+    };
+
+    case UPDATE:
+        return {
+          ...state,
+          todos: state.todos.map(todo => {
+            if (todo.id !== action.id) {
+              return todo
+            }
+            return {
+              ...todo,
+              showComponent: !todo.showComponent
+            }
+          })
+        }
+
+        case SAVE:
           return {
-           ...state,
-            input: action.message
+            ...state,
+            todos: state.todos.map(todo => {
+              if (todo.id !== action.id) {
+                return todo
+              }
+              return {
+                ...todo,
+                showComponent: !todo.showComponent,
+                text: action.val
+              }
+            })
           }
-        })*/
-      case DEL:
-        return state.filter((item,index) => index !== action.id);
     default:
       return state;
   }
 };
 
-// const rootReducer = combineReducers({  
-//   messageReducer : messageReducer
-//  // userDetail : UserReducer  
-//});
 const store = createStore(messageReducer) ;
 
 class Presentational extends React.Component {
@@ -65,17 +112,8 @@ class Presentational extends React.Component {
     super(props);
     
     this.state = {
-      input: '',
-      todos: [
-        { id: 0, text: 'Learn React', showComponent:false },
-        { id: 1, text: 'Learn Redux', showComponent:false },
-        { id: 2, text: 'Build something fun!', showComponent:false }
-      ],
-      showComponent: false
+      input: ''
     }
-
-
-    
     this.handleChange = this.handleChange.bind(this);
     this.submitMessage = this.submitMessage.bind(this);
     this.deleteItem=this.deleteItem.bind(this);
@@ -97,50 +135,16 @@ class Presentational extends React.Component {
    this.props.deleteThisItem(id);
   }
 
-  updateItem(id,val){ 
-  /*  var div=document.createElement("div");
-    var br = document.createElement("br");
-    var textnode = document.createElement("input");
-    textnode.value=val;
-    textnode.setAttribute("id", "updateVal");
-    div.appendChild(br);
-    div.appendChild(textnode);
-
-    var saveButton = document.createElement("BUTTON");
-    var save = document.createTextNode("Save");
-
-    
-    saveButton.appendChild(save);
-
-    div.appendChild(saveButton);
-    var item = document.getElementById(id).parentNode;
-    var spanElement=item.childNodes[0];
-    item.appendChild(div);
-    // item.appendChild(br);
-    // item.appendChild(textnode);
-
-    saveButton.onclick = function(){
-      this.props.updateThisItem(id,document.getElementById("updateVal"));
-    
-    };
-  // this.props.updateThisItem(id,'');
-*/
-this.setState({
-  showComponent: true,
-});
+  updateItem(id){ 
+  this.props.updateThisItem(id);
   }
 saveFn(id){
-  
-  this.props.updateThisItem(id,document.getElementById("updateVal").value);
-  this.setState({
-    showComponent: false,
-  });
-  // item.replaceChild(spanElement,item.childNodes[0]);
-
-
+  this.props.saveThisItem(id,document.getElementById("updateVal").value);
 }
 
+
   render() {
+    const data=this.props.todos;
     return (
       <div>
         <h2>To Do List</h2>
@@ -148,27 +152,35 @@ saveFn(id){
           value={this.state.input}
           onChange={this.handleChange}/><br/>
         <button onClick={this.submitMessage}>Add new todo item</button>
-        <ul>
-          {this.props.messages.map( (message, idx) => {
-              return (
-                 <li key={idx}><span id={idx}>{message}</span>
-{this.state.showComponent ?
-           <SaveButton id={idx} val={message} onSave={this.saveFn} /> :
-           null
+        
+
+         {Object.keys(data).map(obj => 
+        
+         <div>
+          <ul>
+         <li key={data[obj].id}>   
+         {data[obj].text} 
+         
+         {data[obj].showComponent ?
+           <SaveButton id={data[obj].id} val={data[obj].text} onSave={this.saveFn} /> :
+         null
         }
-                <button className="btn-update" onClick={(e)=>this.updateItem(idx,message)}>Update item</button>
-                <button className="btn-del" onClick={() => this.deleteItem(idx)} >Delete item</button>
-                 </li>
-              )
-            })
-          }
-        </ul>
-      </div>
+
+            <button className="btn-update" onClick={(e)=>this.updateItem(data[obj].id)}>Update item</button>
+            <button className="btn-del" onClick={() => this.deleteItem(data[obj].id)}>Delete item</button>
+            </li> 
+            </ul>
+             </div>)
+             
+             }
+         </div>
     );
   }
 };
 const mapStateToProps = (state) => {
-  return {messages: state}
+  return {
+    todos: state.todos
+  }
 };
 
 const mapDispatchToProps = (dispatch) => {
@@ -179,8 +191,11 @@ const mapDispatchToProps = (dispatch) => {
     deleteThisItem: (id) => {
       dispatch(delItem(id))
   },
-  updateThisItem: (id,message) => {
-    dispatch(upItem(id,message))
+  updateThisItem: (id) => {
+    dispatch(upItem(id))
+},
+saveThisItem: (id,val)=>{
+  dispatch(saveItem(id,val))
 }
 }
 };
